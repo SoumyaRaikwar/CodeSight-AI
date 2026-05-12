@@ -1,97 +1,107 @@
 # CodeSight AI: Viva & Presentation Q&A Study Guide
 
-This guide contains potential questions and detailed answers for your minor project viva and presentation.
+This guide contains potential questions, detailed answers, and visual diagrams to help you explain the full working of **CodeSight AI** during your minor project viva.
 
 ---
 
-## 1. Project Overview & Motivation
+## 1. High-Level Architecture (The "Big Picture")
 
-**Q: What is the core problem CodeSight AI solves?**
-**A:** CodeSight AI addresses the difficulty developers face when onboarding or exploring large, unfamiliar repositories. Traditional search is keyword-based; CodeSight AI provides a natural language interface that understands the *semantics* and *architecture* of the code using Agentic AI and RAG.
+**Q: Can you explain the end-to-end flow of a user request?**
+**A:** When a user asks a question, the Next.js frontend sends it to the FastAPI backend. The backend triggers a LangGraph agent which decides whether to fetch code from ChromaDB, query the CodeWiki MCP, or generate a diagram. The final answer is synthesized and sent back with grounded references.
 
-**Q: What are the key features of your application?**
-**A:** 
-- Semantically aware code retrieval (RAG).
-- Agentic orchestration using LangGraph (multi-step reasoning).
-- Automatic generation of Mermaid diagrams for architecture.
-- 3D interactive "Notes" reader for onboarding.
-- Integration with external repository intelligence via MCP (Model Context Protocol).
+### System Architecture Diagram
+```mermaid
+graph TD
+    User((User)) -->|Query| FE[Next.js Frontend]
+    FE -->|API Request| BE[FastAPI Backend]
+    
+    subgraph Agentic_Orchestration [LangGraph Agent Engine]
+        BE --> Agent{Agent Controller}
+        Agent -->|1. Retrieve| VS[Vector Store / ChromaDB]
+        Agent -->|2. Context| MCP[CodeWiki MCP Server]
+        Agent -->|3. Reasoning| LLM[LLM / OpenAI]
+    end
+    
+    VS -->|Source Chunks| Agent
+    MCP -->|External Metadata| Agent
+    LLM -->|Synthesized Answer| Agent
+    
+    Agent -->|Answer + Refs + Diagrams| BE
+    BE -->|JSON Response| FE
+    FE -->|Render UI| User
+```
 
 ---
 
-## 2. Technical Architecture
+## 2. Data Ingestion & RAG Pipeline
 
-**Q: Explain your tech stack and why you chose it.**
+**Q: How do you prepare the source code for the AI to understand it?**
+**A:** We use a pipeline that processes the repository into searchable "embeddings." This is the core of our RAG (Retrieval-Augmented Generation) capability.
+
+### Ingestion Flow
+```mermaid
+flowchart LR
+    URL[GitHub URL] --> Clone[Git Clone]
+    Clone --> Filter[File Filtering\nExclude binaries/node_modules]
+    Filter --> Chunk[Smart Chunking\nSplit by class/function]
+    Chunk --> Embed[Embedding Model\nSentence-Transformers]
+    Embed --> Store[(ChromaDB\nVector Store)]
+```
+
+**Q: What is "Smart Chunking"?**
+**A:** Instead of splitting code by a fixed number of characters, we try to preserve the context of functions and classes. This ensures that the AI doesn't receive a half-finished code block which would lead to incorrect explanations.
+
+---
+
+## 3. Agent Decision Logic (LangGraph)
+
+**Q: How does the AI decide what tools to use?**
+**A:** We use a directed graph where each "node" is a specialized task. The LLM acts as the router, deciding which node to transition to based on the user's intent.
+
+### Agentic Workflow Diagram
+```mermaid
+stateDiagram-v2
+    [*] --> ClassifyIntent
+    
+    ClassifyIntent --> RunRetriever: Ask about code logic
+    ClassifyIntent --> RunRepoMapper: Ask about architecture
+    ClassifyIntent --> RunCodeWiki: Ask about external info
+    
+    RunRetriever --> runFileExplainer
+    RunRepoMapper --> runDiagramGenerator
+    RunCodeWiki --> runNotesGenerator
+    
+    runFileExplainer --> ComposeResponse
+    runDiagramGenerator --> ComposeResponse
+    runNotesGenerator --> ComposeResponse
+    
+    ComposeResponse --> [*]
+```
+
+---
+
+## 4. Technical Deep-Dive
+
+**Q: What are "Grounded References"?**
+**A:** It is a critical feature for trust. When the LLM provides an answer, we force it to cite the specific file path and line numbers it used. The frontend then displays these as clickable links so the user can verify the code themselves.
+
+**Q: Explain the role of ChromaDB.**
+**A:** ChromaDB is a vector database. It stores the mathematical "vectors" (embeddings) of our code chunks. When a user asks a question, we convert the question into a vector and perform a "cosine similarity search" to find the most relevant code blocks.
+
+---
+
+## 5. Challenges & Solutions
+
+**Q: How do you handle large repositories with thousands of files?**
 **A:**
-- **Backend (FastAPI):** High performance, asynchronous support, and excellent type safety with Pydantic.
-- **Frontend (Next.js 14):** Modern React framework with Server Components and excellent routing/performance.
-- **Database (ChromaDB):** An open-source vector database optimized for AI applications and fast semantic search.
-- **Agentic Layer (LangGraph):** Allows for cyclic, stateful workflows which are better for complex code analysis than simple linear chains.
-
-**Q: How does the "Repo Ingestion" pipeline work?**
-**A:** 
-1. The user provides a GitHub URL.
-2. The backend clones the repository (GitPython).
-3. Files are filtered (removing binaries, node_modules, etc.).
-4. Code is chunked into logical blocks (functions/classes).
-5. Chunks are converted into embeddings using `sentence-transformers`.
-6. Embeddings are stored in ChromaDB.
+1. **Filtering**: We ignore non-essential files (images, docs, dependencies).
+2. **Top-K Retrieval**: We only send the top 5-10 most relevant chunks to the LLM to stay within the token limit.
+3. **Summarization**: For very large queries, the agent first generates a summary of the relevant modules before deep-diving into specific logic.
 
 ---
 
-## 3. Agentic AI & RAG
+## 6. Presentation Strategy (VIVA Tips)
 
-**Q: What is RAG, and how is it used here?**
-**A:** Retrieval-Augmented Generation (RAG) is the process of retrieving relevant documents (code chunks) from a database and providing them as context to an LLM. This prevents "hallucinations" and ensures answers are grounded in the actual source code.
-
-**Q: Why use LangGraph instead of a simple LangChain?**
-**A:** Code exploration is rarely linear. An agent might need to retrieve code, realize it needs more context from a different module, and then loop back. LangGraph supports this "looping" (cycles) and maintains a persistent state of the conversation and findings.
-
-**Q: What are the different "nodes" in your agent graph?**
-**A:**
-- `classify_intent`: Determines if the user wants an explanation, a diagram, or onboarding notes.
-- `run_retriever`: Fetches code from ChromaDB.
-- `run_repo_mapper`: Analyzes the high-level file structure.
-- `run_diagram_generator`: Generates Mermaid code for visuals.
-- `compose_response`: Finalizes the answer for the UI.
-
----
-
-## 4. Advanced Integrations
-
-**Q: What is MCP (Model Context Protocol)?**
-**A:** MCP is a standard that allows AI agents to connect to external tools and data sources seamlessly. In this project, we use it to connect to "CodeWiki," providing external repository intelligence that isn't in the local clone.
-
-**Q: How do you handle cases where the LLM might be wrong?**
-**A:** We use "Grounded References." Every claim the AI makes is accompanied by the exact file path and line numbers retrieved from the vector store, allowing the user to verify the source.
-
----
-
-## 5. Challenges & Future Scope
-
-**Q: What were the biggest challenges you faced?**
-**A:**
-- **Context Window Limits:** Fitting large chunks of code into the LLM prompt.
-- **Chunking Strategy:** Ensuring that functions aren't cut in half, which would lose semantic meaning.
-- **Performance:** Making the ingestion of large repositories fast enough for a good UX.
-
-**Q: How would you scale this for production?**
-**A:**
-- Use a distributed vector store (like Pinecone or Weaviate).
-- Implement background workers (Celery/Redis) for repository ingestion.
-- Add user authentication and workspace persistence.
-- Implement streaming (SSE) for chat responses.
-
----
-
-## 6. Premium UI/UX
-
-**Q: Why did you include a 3D Notes reader?**
-**A:** Onboarding is often boring. The 3D reader (using Three.js/Framer Motion) provides a "premium" feel and makes reading structured architecture notes more engaging, improving information retention.
-
----
-
-## Final Quick-Fire Tips:
-- **Be clear about "Local RAG":** Emphasize that the code is indexed locally.
-- **Mention "Agentic":** This is a hot topic. Explain that the AI *thinks* about the steps it needs to take.
-- **Refer to the Makefile:** It shows your project is professional and reproducible.
+- **Show, Don't Just Tell**: If asked about the UI, mention the **3D Notes Reader**. It shows you went beyond basic functionality to focus on UX.
+- **Explain the "Agent"**: Emphasize that this isn't just a simple chatbot; it's a system that *plans* its actions using LangGraph.
+- **Mention GitHub CLI**: If asked about deployment, mention that you've integrated it with GitHub for seamless version control and collaboration.
