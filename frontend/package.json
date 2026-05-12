@@ -1,0 +1,39 @@
+{
+  "name": "codesight-ai-frontend",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "next lint"
+  },
+  "dependencies": {
+    "@radix-ui/react-collapsible": "^1.1.0",
+    "@radix-ui/react-scroll-area": "^1.2.0",
+    "@radix-ui/react-tooltip": "^1.1.4",
+    "@react-three/drei": "^9.120.5",
+    "@react-three/fiber": "^8.17.10",
+    "clsx": "^2.1.1",
+    "lucide-react": "^0.462.0",
+    "mermaid": "^11.4.1",
+    "motion": "^11.11.17",
+    "next": "14.2.25",
+    "react": "18.3.1",
+    "react-dom": "18.3.1",
+    "react-markdown": "^9.0.1",
+    "rehype-highlight": "^7.0.2",
+    "tailwind-merge": "^2.5.5",
+    "three": "^0.172.0"
+  },
+  "devDependencies": {
+    "@types/node": "^22.10.2",
+    "@types/react": "^18.3.12",
+    "@types/react-dom": "^18.3.1",
+    "@types/three": "^0.172.0",
+    "autoprefixer": "^10.4.20",
+    "postcss": "^8.4.49",
+    "tailwindcss": "^3.4.16",
+    "typescript": "^5.7.2"
+  }
+}

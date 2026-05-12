@@ -1,0 +1,25 @@
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.venv/
+backend/.pytest_cache/
+backend/data/
+
+# Node
+frontend/node_modules/
+frontend/.next/
+
+# Env
+*.env
+!.env.example
+backend/.env
+frontend/.env
+
+# OS
+.DS_Store
+
+# Performance outputs
+performance/outputs/*
+!performance/outputs/.gitkeep

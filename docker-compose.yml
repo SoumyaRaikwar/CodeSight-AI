@@ -1,0 +1,24 @@
+version: '3.9'
+
+services:
+  backend:
+    build:
+      context: ./backend
+    container_name: codesight-backend
+    ports:
+      - "8102:8000"
+    env_file:
+      - ./backend/.env
+    volumes:
+      - ./backend/data:/app/data
+
+  frontend:
+    build:
+      context: ./frontend
+    container_name: codesight-frontend
+    ports:
+      - "3102:3000"
+    env_file:
+      - ./frontend/.env
+    depends_on:
+      - backend

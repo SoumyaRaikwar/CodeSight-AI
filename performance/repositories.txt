@@ -1,0 +1,10 @@
+# size_category,repo_url,label(optional)
+# Keep exactly 3 repos: one `small`, one `medium`, one `large`.
+# Example:
+# small,https://github.com/owner/repo-small,small-repo
+# medium,https://github.com/owner/repo-medium,medium-repo
+# large,https://github.com/owner/repo-large,large-repo
+
+small,https://github.com/BNNARAJ/AI-driven-Hydroponic-Farming-Assistant,small-repo
+medium,https://github.com/Sompote/DINOV3-YOLOV12.git,medium-repo
+large,https://github.com/scikit-learn/scikit-learn.git,large-repo

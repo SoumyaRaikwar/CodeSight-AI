@@ -1,0 +1,27 @@
+[
+  {
+    "id": "architecture_overview",
+    "prompt": "Explain the high-level architecture and key modules.",
+    "expected_reference_tokens": ["app", "src", "main", "index"]
+  },
+  {
+    "id": "request_flow",
+    "prompt": "Trace the request flow from entry point to response generation.",
+    "expected_reference_tokens": ["api", "router", "controller", "service"]
+  },
+  {
+    "id": "auth_flow",
+    "prompt": "Explain authentication or authorization flow if present.",
+    "expected_reference_tokens": ["auth", "middleware", "guard", "token"]
+  },
+  {
+    "id": "data_layer",
+    "prompt": "How does the repository handle data storage and retrieval?",
+    "expected_reference_tokens": ["db", "database", "model", "repository"]
+  },
+  {
+    "id": "onboarding",
+    "prompt": "Give an onboarding path for a new developer in this repo.",
+    "expected_reference_tokens": ["readme", "docs", "setup", "config"]
+  }
+]
